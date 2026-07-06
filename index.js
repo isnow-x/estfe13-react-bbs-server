@@ -7,6 +7,7 @@ const multer = require("multer");
 
 app.use(express.json()); //json->object
 app.use(express.urlencoded({ extended: true })); //html form ->object
+app.use("/uploads", express.static("uploads")); // /uploads 주소로 접속시 upload 폴더에 접근 권한 부여
 
 let corsOptions = {
   origin: "*",
@@ -54,7 +55,7 @@ app.get("/view", (req, res) => {
   const id = req.query.id;
   // const sqlQuery = `SELECT * FROM board WHERE id=${req.query.id};`;
   const sqlQuery =
-    "SELECT title, content, writer, DATE_FORMAT(date, '%Y-%m-%d') AS date FROM board WHERE id=?;";
+    "SELECT title, content, writer, image_path, DATE_FORMAT(date, '%Y-%m-%d') AS date FROM board WHERE id=?;";
   db.query(sqlQuery, [id], (err, result) => {
     if (err) throw err;
     res.send(result);
@@ -65,6 +66,7 @@ app.post("/write", upload.single("image"), (req, res) => {
   console.log(req.body);
   const { title, writer, content } = req.body;
   const imagePath = req.file ? req.file.path : null; //req.file.path는 업로드된 파일의 경로
+
   const sqlQuery = "insert into board (title,content,writer,image_path) values (?,?,?,?);";
   db.query(sqlQuery, [title, content, writer, imagePath], (err, result) => {
     if (err) throw err;
@@ -82,6 +84,7 @@ app.post("/delete", (req, res) => {
     res.send(result);
   });
 });
+
 app.post("/deleteselect", (req, res) => {
   console.log(req.body);
   const { boardIdList } = req.body;
